@@ -2,8 +2,14 @@ name: Android CI
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
   pull_request:
-
+  
+permissions:
+  contents: write
+  
 jobs:
   build:
     name: Build debug apk
