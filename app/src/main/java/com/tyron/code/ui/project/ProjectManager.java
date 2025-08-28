@@ -85,7 +85,7 @@ public class ProjectManager {
         .runNonCancelableAsync(() -> doOpenProject(project, downloadLibs, listener, logger));
   }
 
-  private void doOpenProject(
+private void doOpenProject(
       Project project, boolean downloadLibs, TaskListener mListener, ILogger logger) {
     mCurrentProject = project;
     Module module = mCurrentProject.getMainModule();
@@ -99,17 +99,23 @@ public class ProjectManager {
       List<String> plugins = new ArrayList<>();
       List<String> unsupported_plugins = new ArrayList<>();
 
-      for (String plugin : module.getPlugins()) {
-        if (plugin.equals("java-library")
-            || plugin.equals("com.android.library")
-            || plugin.equals("com.android.application")
-            || plugin.equals("kotlin")
-            || plugin.equals("application")
-            || plugin.equals("kotlin-android")) {
-          plugins.add(plugin);
-        } else {
-          unsupported_plugins.add(plugin);
+      // Patch: aman jika getPlugins() null
+      List<String> modulePlugins = module.getPlugins();
+      if (modulePlugins != null) {
+        for (String plugin : modulePlugins) {
+          if (plugin.equals("java-library")
+              || plugin.equals("com.android.library")
+              || plugin.equals("com.android.application")
+              || plugin.equals("kotlin")
+              || plugin.equals("application")
+              || plugin.equals("kotlin-android")) {
+            plugins.add(plugin);
+          } else {
+            unsupported_plugins.add(plugin);
+          }
         }
+      } else {
+        logger.warning("Module plugins list is null for module: " + module.getName());
       }
 
       String pluginType = plugins.toString();
@@ -121,8 +127,7 @@ public class ProjectManager {
           shouldReturn = true;
         } else {
           logger.debug("NOTE: " + "Plugins applied: " + plugins.toString());
-          if (unsupported_plugins.isEmpty()) {
-          } else {
+          if (!unsupported_plugins.isEmpty()) {
             logger.debug(
                 "NOTE: "
                     + "Unsupported plugins: "
@@ -136,12 +141,15 @@ public class ProjectManager {
       logger.warning("Failed to open project: " + exception.getMessage());
       shouldReturn = true;
     }
+
     mProjectOpenListeners.forEach(it -> it.onProjectOpen(mCurrentProject));
 
     if (shouldReturn) {
       mListener.onComplete(project, false, "Failed to open project.");
       return;
     }
+
+    // Lanjutan indexing dan resource injection seperti kode asli...
 
     try {
       mCurrentProject.setIndexing(true);
