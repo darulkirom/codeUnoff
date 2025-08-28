@@ -42,24 +42,17 @@ android {
         }
     }
 
-    signingConfigs {
-        debug {
-            storeFile file('codeassist.keystore')
-            keyAlias 'codeassist'
-            storePassword 'codeassist'
-            keyPassword 'codeassist'
-        }
-    }
+
     
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            signingConfig signingConfigs.debug
+            
         }
     }
 	
